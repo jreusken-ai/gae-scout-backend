@@ -33,12 +33,6 @@ export async function callClaude(apiKey, system, userMessage, maxTokens = 4000) 
     model:      MODEL,
     max_tokens: maxTokens,
     system,
-    tools: [
-      {
-        type: 'web_search_20250305',
-        name: 'web_search',
-      },
-    ],
     messages: [
       { role: 'user', content: userMessage },
     ],
