@@ -234,7 +234,7 @@ const searchHistory = [];
 
 // ── API BASE ──────────────────────────────────────────────
 // Alle calls gaan naar eigen backend — nooit rechtstreeks naar Anthropic
-const API_BASE = '';  // Same-origin: Express serveert zowel frontend als /api/*
+const API_BASE = 'https://gae-scout-backend-production.up.railway.app';  // Same-origin: Express serveert zowel frontend als /api/*
 
 // ── HEALTH CHECK ──────────────────────────────────────────
 async function checkServer() {
