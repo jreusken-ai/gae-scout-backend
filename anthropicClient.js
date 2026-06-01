@@ -3,8 +3,8 @@
 import axios from 'axios';
 import { logger } from './logger.js';
 
-const ANTHROPIC_BASE = 'https://api.anthropic.com/v1';
-const MODEL          = 'claude-3-haiku-20240307';
+const ANTHROPIC_BASE = 'https://api.anthropic.com';
+const MODEL = 'claude-3-5-sonnet-20241022';
 const TIMEOUT_MS     = 60_000; // 60 seconden
 const MAX_RETRIES    = 3;
 const RETRY_DELAY_MS = 2_000;
@@ -45,7 +45,7 @@ const headers = {
     try {
       logger.info(`Claude API aanroep`, { attempt, model: MODEL });
 
-      const response = await axios.post(`${ANTHROPIC_BASE}/messages`, body, {
+      const response = await axios.post(`${ANTHROPIC_BASE}/v1/messages`, body, {
         headers,
         timeout: TIMEOUT_MS,
       });
