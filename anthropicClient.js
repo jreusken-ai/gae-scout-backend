@@ -4,7 +4,7 @@ import axios from 'axios';
 import { logger } from './logger.js';
 
 const ANTHROPIC_BASE = 'https://api.anthropic.com/v1';
-const MODEL          = 'claude-3-haiku-20240307';
+const MODEL          = 'claude-sonnet-4-0';
 const TIMEOUT_MS     = 60_000; // 60 seconden
 const MAX_RETRIES    = 3;
 const RETRY_DELAY_MS = 2_000;
