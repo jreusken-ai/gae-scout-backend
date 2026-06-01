@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAE Scout Intelligence</title>
+<style>
+:root {
+  --ink:#0D0D0D; --paper:#F2EDE3; --paper2:#E8E2D6; --paper3:#DDD6C8;
+  --gold:#B8831A; --amber:#9A5C10; --red:#8B1F2E;
+  --green:#1E5C35; --blue:#1A3A5C; --muted:#6B6050;
+  --rule:rgba(13,13,13,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--paper);color:var(--ink);font-family:Georgia,serif;min-height:100vh;}
+input,select,button{font-family:inherit;}
+
+/* TOP STRIP */
+.top-strip{background:var(--ink);color:var(--paper);padding:8px 24px;display:flex;justify-content:space-between;align-items:center;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+.strip-r{color:var(--gold);}
+
+/* HEADER */
+header{border-bottom:2px solid var(--ink);padding:24px 24px 18px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px;}
+header h1{font-size:clamp(28px,5vw,44px);font-weight:900;line-height:.9;letter-spacing:-1px;margin-bottom:8px;font-style:italic;}
+header h1 em{color:var(--gold);font-style:normal;}
+.tagline{font-family:'Courier New',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.header-meta{text-align:right;font-family:'Courier New',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;line-height:1.8;}
+
+/* SEARCH */
+.search-wrap{padding:20px 24px 14px;border-bottom:1px solid var(--rule);background:var(--paper2);}
+.search-label{font-family:'Courier New',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.search-row{display:flex;gap:10px;flex-wrap:wrap;}
+.search-row input{flex:1;min-width:200px;background:var(--paper);border:1.5px solid var(--ink);padding:12px 16px;font-family:Georgia,serif;font-size:17px;font-style:italic;color:var(--ink);outline:none;transition:border-color .15s;}
+.search-row input:focus{border-color:var(--gold);}
+.search-row input::placeholder{color:var(--muted);opacity:.6;}
+.btn{background:var(--ink);color:var(--paper);border:none;padding:12px 24px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.btn:hover{background:var(--blue);}
+.btn:disabled{background:var(--muted);cursor:not-allowed;}
+.extras{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.extras select{background:var(--paper);border:1.5px solid rgba(13,13,13,.25);padding:7px 10px;font-family:'Courier New',monospace;font-size:10px;color:var(--ink);cursor:pointer;outline:none;}
+
+/* STATUS BAR */
+.status-bar{padding:10px 24px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--rule);min-height:40px;color:var(--muted);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* OUTPUT */
+.output{padding:24px;display:none;max-width:908px;}
+.output.visible{display:block;}
+
+/* LOADING */
+.loading-card{border:1.5px solid var(--ink);background:var(--paper);padding:48px 24px;text-align:center;}
+.lc-label{font-family:'Courier New',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.lc-name{font-size:28px;font-style:italic;color:var(--gold);margin-bottom:8px;}
+.lc-sub{font-family:'Courier New',monospace;font-size:10px;color:var(--muted);}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--rule);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ERROR */
+.error-box{border:1.5px solid var(--red);background:rgba(139,31,46,.05);padding:16px 20px;color:var(--red);font-family:'Courier New',monospace;font-size:11px;}
+.error-box .err-title{margin-bottom:6px;font-weight:600;letter-spacing:2px;}
+.error-box .err-hint{margin-top:8px;font-size:10px;color:var(--muted);}
+
+/* RAPPORT */
+.rapport{border:1.5px solid var(--ink);background:var(--paper);}
+.r-header{border-bottom:2px solid var(--ink);padding:20px 24px;display:grid;grid-template-columns:1fr 155px;gap:16px;align-items:start;}
+.r-series{font-family:'Courier New',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.r-name{font-size:clamp(22px,4vw,34px);font-weight:900;line-height:.9;letter-spacing:-.5px;margin-bottom:8px;font-style:italic;}
+.r-name em{color:var(--gold);font-style:normal;}
+.r-sub{font-family:'Courier New',monospace;font-size:9px;color:var(--muted);line-height:1.6;}
+.vitals{display:flex;flex-direction:column;gap:1px;background:var(--ink);}
+.vrow{background:var(--paper);padding:4px 8px;}
+.vl{font-family:'Courier New',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:1px;}
+.vv{font-size:10px;font-weight:600;line-height:1.3;}
+.vv-gold{color:var(--gold);} .vv-red{color:var(--red);} .vv-green{color:var(--green);}
+
+.legenda{background:var(--paper2);border-bottom:1px solid var(--rule);padding:5px 24px;display:flex;gap:14px;align-items:center;font-family:'Courier New',monospace;font-size:8px;flex-wrap:wrap;color:var(--muted);}
+.leg-lbl{letter-spacing:2px;text-transform:uppercase;font-weight:700;}
+.leg-item{display:flex;align-items:center;gap:5px;}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+.r-alert{border-left:3px solid var(--gold);background:rgba(184,131,26,.07);padding:8px 12px;font-size:11px;color:var(--amber);font-weight:600;line-height:1.5;}
+.r-alert span{color:var(--ink);font-weight:400;}
+
+.r-body{padding:20px 24px;display:flex;flex-direction:column;gap:20px;}
+
+.s-head{display:flex;align-items:baseline;gap:8px;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin-bottom:12px;}
+.s-num{font-family:'Courier New',monospace;font-size:9px;color:var(--gold);letter-spacing:2px;}
+.s-title{font-size:16px;font-weight:700;}
+
+.blok{border-radius:2px;padding:10px 12px;margin-bottom:8px;}
+.blok-label{font-family:'Courier New',monospace;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.blok p{font-size:12px;line-height:1.65;color:#2A2520;text-align:justify;}
+.blok-obs{background:rgba(26,58,92,.06);border-left:3px solid var(--blue);}
+.blok-obs .blok-label{color:var(--blue);}
+.blok-int{background:rgba(184,131,26,.07);border-left:3px solid var(--gold);}
+.blok-int .blok-label{color:var(--amber);}
+.blok-open{background:rgba(139,31,46,.06);border-left:3px solid var(--red);}
+.blok-open .blok-label{color:var(--red);}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+.career-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px;}
+.career-table th{font-family:'Courier New',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1.5px solid var(--ink);background:var(--paper2);}
+.career-table td{padding:5px 6px;border-bottom:1px solid var(--rule);font-size:11px;vertical-align:top;line-height:1.4;}
+.career-table tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;font-family:'Courier New',monospace;font-size:7px;letter-spacing:1px;padding:1px 4px;border-radius:1px;vertical-align:middle;margin-left:3px;text-transform:uppercase;}
+.badge-top{background:rgba(139,31,46,.1);color:var(--red);border:1px solid rgba(139,31,46,.3);}
+.badge-mid{background:rgba(184,131,26,.1);color:var(--amber);border:1px solid rgba(184,131,26,.3);}
+.badge-now{background:rgba(30,92,53,.1);color:var(--green);border:1px solid rgba(30,92,53,.3);}
+.badge-youth{background:rgba(107,96,80,.1);color:var(--muted);border:1px solid rgba(107,96,80,.2);}
+
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:var(--rule);border:1px solid var(--rule);margin-bottom:12px;}
+.stat-cell{background:var(--paper);padding:10px 6px;text-align:center;}
+.stat-val{font-size:22px;font-weight:900;line-height:1;margin-bottom:4px;}
+.stat-val-sm{font-size:14px;}
+.stat-val-gold{color:var(--gold);} .stat-val-green{color:var(--green);} .stat-val-red{color:var(--red);} .stat-val-amber{color:var(--amber);}
+.stat-label{font-family:'Courier New',monospace;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);line-height:1.3;}
+
+.fin-table{width:100%;border-collapse:collapse;font-size:11px;}
+.fin-table tr{border-bottom:1px solid var(--rule);}
+.fin-table tr:last-child{border-bottom:none;}
+.fin-table td{padding:4px 0;}
+.fin-table .fl{color:var(--muted);width:55%;}
+.fin-table .fr{text-align:right;font-weight:600;}
+.fr-gold{color:var(--gold);} .fr-green{color:var(--green);} .fr-red{color:var(--red);}
+.fin-table .section-row td{font-family:'Courier New',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding-top:10px;padding-bottom:4px;border-bottom:1.5px solid var(--ink);}
+
+.priority-box{border:2px solid var(--gold);padding:12px 16px;text-align:center;margin-bottom:8px;}
+.priority-label{font-family:'Courier New',monospace;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.priority-val{font-size:16px;font-weight:900;margin-bottom:4px;}
+.priority-sub{font-family:'Courier New',monospace;font-size:8px;color:var(--muted);}
+.verdict{background:var(--ink);color:var(--paper);padding:12px 14px;}
+.verdict-label{font-family:'Courier New',monospace;font-size:8px;letter-spacing:2.5px;color:rgba(242,237,227,.4);margin-bottom:6px;text-transform:uppercase;}
+.verdict-text{font-size:11px;font-style:italic;line-height:1.65;text-align:justify;}
+
+.card-inner{background:var(--paper2);border:1px solid rgba(13,13,13,.08);padding:10px 12px;}
+.card-head{font-family:'Courier New',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--rule);}
+.check-list{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.check-list li{font-size:11px;color:var(--muted);padding-left:14px;position:relative;line-height:1.5;}
+.check-list li::before{position:absolute;left:0;font-family:'Courier New',monospace;font-size:11px;font-weight:700;}
+.ok li::before{content:'+';color:var(--green);}
+.risk li::before{content:'!';color:var(--red);}
+.todo li::before{content:'→';color:var(--blue);font-size:9px;top:1px;}
+
+.r-footer{border-top:1px solid var(--rule);padding:8px 24px;display:flex;justify-content:space-between;font-family:'Courier New',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;flex-wrap:wrap;gap:4px;}
+
+/* HISTORY */
+.history{padding:0 24px 32px;}
+.history-label{font-family:'Courier New',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-top:16px;border-top:1px solid var(--rule);}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{background:var(--paper2);border:1px solid rgba(13,13,13,.15);padding:5px 10px;font-family:'Courier New',monospace;font-size:10px;color:var(--ink);cursor:pointer;transition:background .15s;}
+.chip:hover{background:var(--paper3);}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  header{grid-template-columns:1fr;}
+  .r-header{grid-template-columns:1fr;}
+  .vitals{flex-direction:row;flex-wrap:wrap;background:transparent;gap:2px;}
+  .vrow{border:1px solid var(--rule);flex:1;min-width:120px;}
+  .two-col{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div class="top-strip">
+  <span style="opacity:.5">Go Ahead Eagles · Scouting & Recruitment · Vertrouwelijk</span>
+  <span class="strip-r" id="serverStatus">Verbinden...</span>
+</div>
+
+<header>
+  <div>
+    <h1>GAE <em>Scout</em></h1>
+    <div class="tagline">Intelligence · Rapport Generator · AI Powered</div>
+  </div>
+  <div class="header-meta">
+    <div>Seizoen 2025/26</div>
+    <div>Alle posities</div>
+    <div>Live web data</div>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <div class="search-label">Speler opzoeken</div>
+  <div class="search-row">
+    <input type="text" id="playerInput"
+      placeholder="Naam speler (bv. Lars de Blok, Ante Kavelj...)"
+      autocomplete="off" maxlength="100"/>
+    <button class="btn" id="searchBtn" onclick="generate()">Genereer rapport</button>
+  </div>
+  <div class="extras">
+    <select id="posSelect">
+      <option value="">Positie (optioneel)</option>
+      <option>Keeper</option>
+      <option>Verdediger</option>
+      <option>Middenvelder</option>
+      <option>Aanvaller / Winger</option>
+    </select>
+    <select id="compSelect">
+      <option value="">Competitie (optioneel)</option>
+      <option>Eredivisie</option>
+      <option>KKD / Eerste Divisie</option>
+      <option>Ligue 1 / 2</option>
+      <option>Serie A / B / C</option>
+      <option>Bundesliga</option>
+      <option>Eliteserien / Allsvenskan / Superliga</option>
+      <option>Super League Greece</option>
+      <option>Overig</option>
+    </select>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="dot" id="statusDot" style="background:var(--muted);opacity:.3"></div>
+  <span id="statusText">Voer een spelernaam in en klik op Genereer rapport</span>
+</div>
+
+<div class="output" id="output">
+  <div id="outputContent"></div>
+</div>
+
+<div class="history" id="historySection" style="display:none">
+  <div class="history-label">Eerder gegenereerd</div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────
+let rapportCounter = 49;
+let isLoading      = false;
+const searchHistory = [];
+
+// ── API BASE ──────────────────────────────────────────────
+// Alle calls gaan naar eigen backend — nooit rechtstreeks naar Anthropic
+const API_BASE = '';  // Same-origin: Express serveert zowel frontend als /api/*
+
+// ── HEALTH CHECK ──────────────────────────────────────────
+async function checkServer() {
+  const el = document.getElementById('serverStatus');
+  try {
+    const r = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    el.textContent = '✓ Server actief';
+    el.style.color  = '#1E5C35';
+  } catch(e) {
+    el.textContent = '✗ Server offline';
+    el.style.color  = '#8B1F2E';
+    console.warn('Health check mislukt:', e.message);
+  }
+}
+checkServer();
+
+// ── GENERATE ──────────────────────────────────────────────
+async function generate(naam) {
+  naam = (naam || document.getElementById('playerInput').value).trim();
+  if (!naam || isLoading) return;
+
+  const pos  = document.getElementById('posSelect').value;
+  const comp = document.getElementById('compSelect').value;
+
+  isLoading = true;
+  rapportCounter++;
+
+  setStatus('loading', `Bezig met scouten van ${naam}...`);
+  document.getElementById('searchBtn').disabled = true;
+
+  const output  = document.getElementById('output');
+  const content = document.getElementById('outputContent');
+  output.classList.add('visible');
+  content.innerHTML = `
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="lc-label">Rapport wordt gegenereerd</div>
+      <div class="lc-name">${escHtml(naam)}</div>
+      <div class="lc-sub">Web data ophalen en analyseren — ca. 20-40 sec.</div>
+    </div>`;
+
+  try {
+    // POST naar eigen backend — nooit naar Anthropic direct
+    const res = await fetch(`${API_BASE}/api/scout`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        naam,
+        positie:    pos,
+        competitie: comp,
+        nummer:     rapportCounter,
+      }),
+      signal: AbortSignal.timeout(90_000), // 90s browser timeout (server heeft 60s)
+    });
+
+    // Lees response altijd als tekst eerst — voorkomt json parse crash op HTML errors
+    const rawText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      throw new Error(`Server gaf onverwachte response terug (HTTP ${res.status})`);
+    }
+
+    if (!res.ok) {
+      throw new Error(data.error || `Serverfout: HTTP ${res.status}`);
+    }
+    if (!data.success || !data.rapport) {
+      throw new Error('Onverwachte serverresponse — geen rapport ontvangen');
+    }
+
+    renderRapport(data.rapport, data.meta);
+
+    if (!searchHistory.includes(naam)) {
+      searchHistory.unshift(naam);
+      updateHistory();
+    }
+
+    setStatus('ok', `Rapport gegenereerd voor ${data.rapport.naam} · ${data.rapport.nummer}`);
+
+  } catch(e) {
+    const hint = getErrorHint(e.message);
+    content.innerHTML = `
+      <div class="error-box">
+        <div class="err-title">FOUT</div>
+        <div>${escHtml(e.message)}</div>
+        ${hint ? `<div class="err-hint">${hint}</div>` : ''}
+      </div>`;
+    setStatus('err', 'Fout bij genereren rapport');
+    console.error('Scout fout:', e);
+  }
+
+  isLoading = false;
+  document.getElementById('searchBtn').disabled = false;
+}
+
+function getErrorHint(msg) {
+  if (msg.includes('Server offline') || msg.includes('NetworkError') || msg.includes('fetch'))
+    return '→ Controleer of de backend server draait (npm start in de backend map)';
+  if (msg.includes('Timeout') || msg.includes('timeout'))
+    return '→ Claude had meer tijd nodig. Probeer opnieuw.';
+  if (msg.includes('429') || msg.includes('Te veel'))
+    return '→ Rate limit bereikt. Wacht enkele minuten.';
+  if (msg.includes('API key'))
+    return '→ Voeg een geldige ANTHROPIC_API_KEY toe aan het .env bestand';
+  return '';
+}
+
+// ── STATUS ────────────────────────────────────────────────
+function setStatus(type, text) {
+  const dot  = document.getElementById('statusDot');
+  const span = document.getElementById('statusText');
+  const colors = {loading:'#B8831A',ok:'#1E5C35',err:'#8B1F2E',idle:'#6B6050'};
+  const opacities = {loading:1,ok:1,err:1,idle:.3};
+  const anims = {loading:'pulse 1s infinite',ok:'none',err:'none',idle:'none'};
+  dot.style.background = colors[type] || colors.idle;
+  dot.style.opacity    = opacities[type] ?? .3;
+  dot.style.animation  = anims[type] || 'none';
+  span.textContent     = text;
+}
+
+// ── RENDER RAPPORT ────────────────────────────────────────
+function renderRapport(d, meta) {
+  const km = {gold:'fr-gold',green:'fr-green',red:'fr-red'};
+  const euC = (d.eu_paspoort||'').startsWith('Ja') ? 'vv-green' : 'vv-red';
+
+  const vital = (l, v, c='') => `
+    <div class="vrow">
+      <div class="vl">${l}</div>
+      <div class="vv ${c}">${escHtml(v||'—')}</div>
+    </div>`;
+
+  const vitals = [
+    vital('Geboortedatum', d.geboortedatum),
+    vital('Nationaliteit',  d.nationaliteit),
+    vital('Lengte / Voet',  `${d.lengte||'?'} · ${d.voet||'?'}`),
+    vital('TM Marktwaarde', d.tm_waarde, 'vv-gold'),
+    vital('Contract t/m',   d.contract,  'vv-red'),
+    vital('EU-paspoort',    d.eu_paspoort, euC),
+    d.agent && d.agent !== 'Onbekend' ? vital('Agent', d.agent) : '',
+    d.selectie ? vital('Selectie', d.selectie) : '',
+  ].join('');
+
+  const carRows = (d.carriere||[]).map(r => `
+    <tr>
+      <td style="font-family:'Courier New',monospace;font-size:10px">${escHtml(r.periode||'')}</td>
+      <td style="font-weight:600">${escHtml(r.club||'')}
+        <span class="badge badge-${r.badge||'mid'}">${{top:'Top',mid:'Prof',now:'Nu',youth:'Jeugd'}[r.badge]||'Prof'}</span>
+      </td>
+      <td>${escHtml(r.niveau||'')}</td>
+      <td style="color:var(--muted)">${escHtml(r.opmerking||'')}</td>
+    </tr>`).join('');
+
+  const statsHTML = (d.stats||[]).map(s => {
+    const sm = typeof s.waarde==='string' && s.waarde.length>4 ? ' stat-val-sm' : '';
+    const c  = s.kleur ? ` stat-val-${s.kleur}` : '';
+    return `<div class="stat-cell">
+      <div class="stat-val${sm}${c}">${escHtml(String(s.waarde||''))}</div>
+      <div class="stat-label">${escHtml(s.label||'')}</div>
+    </div>`;
+  }).join('');
+
+  const finRows = (d.fin_rows||[]).map(r => `
+    <tr>
+      <td class="fl">${escHtml(r.label||'')}</td>
+      <td class="fr ${km[r.kleur]||''}">${escHtml(r.waarde||'')}</td>
+    </tr>`).join('');
+
+  const list = (items, cls) =>
+    `<ul class="check-list ${cls}">${(items||[]).map(p=>`<li>${escHtml(p)}</li>`).join('')}</ul>`;
+
+  const elapsedStr = meta?.elapsed ? ` · ${(meta.elapsed/1000).toFixed(1)}s` : '';
+
+  document.getElementById('outputContent').innerHTML = `
+  <div class="rapport">
+    <div class="r-header">
+      <div>
+        <div class="r-series">Go Ahead Eagles · ${escHtml(d.nummer||'')} · Vertrouwelijk</div>
+        <div class="r-name">${escHtml(d.voornaam||'')}<br><em>${escHtml(d.achternaam||'')}</em></div>
+        <div class="r-sub">${escHtml(d.positie||'')} · ${escHtml(d.club||'')} · ${escHtml(d.competitie||'')} · ${escHtml(d.land||'')}</div>
+      </div>
+      <div class="vitals">${vitals}</div>
+    </div>
+
+    <div class="legenda">
+      <span class="leg-lbl">Legenda</span>
+      <span class="leg-item"><span class="leg-dot" style="background:rgba(26,58,92,.35)"></span> Structuurobservatie</span>
+      <span class="leg-item"><span class="leg-dot" style="background:rgba(184,131,26,.55)"></span> Interpretatie</span>
+      <span class="leg-item"><span class="leg-dot" style="background:rgba(139,31,46,.45)"></span> Open vraag</span>
+    </div>
+
+    <div class="r-body">
+      ${d.alert ? `<div class="r-alert">⭐ ${escHtml(d.alert.split(' — ')[0])} — <span>${escHtml(d.alert.split(' — ').slice(1).join(' — '))}</span></div>` : ''}
+
+      <div>
+        <div class="s-head"><span class="s-num">01</span><span class="s-title">Carrièreverloop</span></div>
+        <table class="career-table">
+          <thead><tr><th>Periode</th><th>Club</th><th>Niveau</th><th>Opmerking</th></tr></thead>
+          <tbody>${carRows}</tbody>
+        </table>
+        <div class="blok blok-obs"><div class="blok-label">Structuurobservatie</div><p>${escHtml(d.obs_carriere||'')}</p></div>
+        <div class="two-col">
+          <div class="blok blok-int"><div class="blok-label">Interpretatie</div><p>${escHtml(d.int_carriere||'')}</p></div>
+          <div class="blok blok-open"><div class="blok-label">Open vraag</div><p>${escHtml(d.open_carriere||'')}</p></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="s-head"><span class="s-num">02</span><span class="s-title">Seizoensdata ${escHtml(d.seizoen_label||'')}</span></div>
+        <div class="stats-row">${statsHTML}</div>
+        <div class="two-col">
+          <div class="blok blok-obs"><div class="blok-label">Structuurobservatie</div><p>${escHtml(d.obs_seizoen||'')}</p></div>
+          <div class="blok blok-open"><div class="blok-label">Open vraag</div><p>${escHtml(d.open_seizoen||'')}</p></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="s-head"><span class="s-num">03</span><span class="s-title">Financieel & Conclusie</span></div>
+        <div class="two-col">
+          <table class="fin-table">
+            <tbody>
+              <tr class="section-row"><td colspan="2">Transferparameters</td></tr>
+              ${finRows}
+              <tr class="section-row"><td colspan="2">Exitpotentieel</td></tr>
+              <tr><td class="fl">Bij succes</td><td class="fr fr-green">${escHtml(d.exit_succes||'—')}</td></tr>
+              <tr><td class="fl">Bij stagnatie</td><td class="fr fr-red">${escHtml(d.exit_stagnatie||'—')}</td></tr>
+            </tbody>
+          </table>
+          <div>
+            <div class="priority-box">
+              <div class="priority-label">Aanbevolen actie</div>
+              <div class="priority-val">${escHtml(d.actie||'—')}</div>
+              <div class="priority-sub">${escHtml(d.actie_sub||'')}</div>
+            </div>
+            <div class="verdict">
+              <div class="verdict-label">Voorlopig oordeel</div>
+              <div class="verdict-text">"${escHtml(d.oordeel||'')}"</div>
+            </div>
+          </div>
+        </div>
+        <div class="two-col" style="margin-top:8px">
+          <div class="card-inner">
+            <div class="card-head">Positieve indicatoren</div>
+            ${list(d.positief, 'ok')}
+          </div>
+          <div class="card-inner">
+            <div class="card-head">Risicofactoren</div>
+            ${list(d.risico, 'risk')}
+            ${d.acties?.length ? `<div class="card-head" style="margin-top:10px">Volgende stappen</div>${list(d.acties,'todo')}` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="r-footer">
+      <div>GO AHEAD EAGLES · ${escHtml(d.nummer||'')} · ${escHtml((d.naam||'').toUpperCase())} · VERTROUWELIJK</div>
+      <div>AI gegenereerd · Juni 2026${elapsedStr}</div>
+    </div>
+  </div>`;
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function escHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function updateHistory() {
+  const sec   = document.getElementById('historySection');
+  const chips = document.getElementById('chips');
+  sec.style.display = searchHistory.length ? 'block' : 'none';
+  chips.innerHTML = searchHistory.map(n =>
+    `<div class="chip" onclick="quickSearch('${escHtml(n)}')">${escHtml(n)}</div>`
+  ).join('');
+}
+
+function quickSearch(naam) {
+  document.getElementById('playerInput').value = naam;
+  generate(naam);
+}
+
+// Enter key
+document.getElementById('playerInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generate();
+});
+</script>
+</body>
+</html>
