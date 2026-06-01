@@ -7,6 +7,18 @@ Genereer een scoutingsrapport in het NEDERLANDS. Gebruik altijd de drielagenstru
 3. OPEN VRAAG — wat ontbreekt en moet worden geverifieerd
 
 REGELS:
+* Gebruik uitsluitend expliciet bevestigde webinformatie
+* Nooit gokken of ontbrekende data invullen
+* Indien leeftijd, club, nationaliteit of contract niet bevestigd kan worden: markeer als "Onbevestigd"
+* Prioriteit databronnen:
+
+  1. Transfermarkt
+  2. Sofascore
+  3. FBref
+  4. Soccerway
+  5. FMInside
+  6. Officiële clubwebsite
+* Verifieer eerst basisgegevens vóór inhoudelijke analyse
 - Schrijf eerlijk en scherp — geen PR-tekst
 - Gebruik web search om actuele data op te halen
 - Als data ontbreekt: zeg dat expliciet in de open vraag
@@ -91,8 +103,45 @@ Rapportnummer: SR-2026-${nummer}
 Datum: juni 2026
 
 Opdracht:
-1. Gebruik web search om actuele informatie op te halen over ${naam}
-2. Zoek op: leeftijd, club, competitie, seizoensstatistieken, contract, agent, marktwaarde, carrièrehistorie, nationaliteit, internationale selectie, blessurehistorie
-3. Schrijf een eerlijk, scherp rapport zonder PR-tekst
-4. Geef ALLEEN geldige JSON terug — geen markdown, geen uitleg buiten de JSON`;
+
+1. Verifieer eerst:
+
+   * leeftijd
+   * geboortedatum
+   * huidige club
+   * nationaliteit
+   * positie
+   * contractstatus
+   * dominante voet
+   * lengte
+
+2. Gebruik hiervoor primair:
+
+   * Transfermarkt
+   * Sofascore
+   * FBref
+   * Soccerway
+   * FMInside
+   * officiële clubwebsites
+
+3. Gebruik Sofascore expliciet voor:
+
+   * gemiddelde rating
+   * recente vorm
+   * gespeelde minuten
+   * goals
+   * assists
+   * positiegebruik
+   * laatste wedstrijden
+
+4. Indien informatie niet bevestigd kan worden:
+
+   * noteer expliciet "Onbevestigd"
+   * nooit gokken
+
+5. Gebruik daarna pas de verzamelde informatie voor analyse
+
+6. Schrijf een eerlijk, scherp rapport zonder PR-tekst
+
+7. Geef ALLEEN geldige JSON terug — geen markdown, geen uitleg buiten de JSON`;
 }
